@@ -1,39 +1,53 @@
+#Particle Swarm Optimizatiion
+#Richard Jeffords
+#05/2015
+
 import sys 
 import math
 import random
 from random import randint
 
-if len(sys.argv) != 12:
-    sys.stderr.write('USAGE: swarm.py numParticles inertia cognition socialRate localRate worldWidth worldHeight maxVelocity maxEpochs k fname\n')
+
+if sys.argv[1] == '-v':
+    verbose = True
+else:
+    verbose = False
+
+if sys.argv[1] == 'test' or sys.argv[2] == 'test':
+    thisIsATest = True
+elif len(sys.argv) < 12:
+    sys.stderr.write('USAGE: [-v] swarm.py numParticles inertia cognition socialRate localRate worldWidth worldHeight maxVelocity maxEpochs k fname\n')
     sys.exit(0)
+else:
+    thisIsATest = False
 
-########### command line args
-numParticles = int(sys.argv[1])
-inertia      = float(sys.argv[2])
-cognition    = float(sys.argv[3])
-socialRate   = float(sys.argv[4])
-localRate    = float(sys.argv[5])
-worldWidth   = float(sys.argv[6])
-worldHeight  = float(sys.argv[7])
-maxVelocity  = float(sys.argv[8])
-maxEpochs    = int(sys.argv[9])
-k            = int(sys.argv[10])
-fname        = str(sys.argv[11])
-fname += '.csv'
+if(not thisIsATest):
+    ########### command line args
+    numParticles = int(sys.argv[1])
+    inertia      = float(sys.argv[2])
+    cognition    = float(sys.argv[3])
+    socialRate   = float(sys.argv[4])
+    localRate    = float(sys.argv[5])
+    worldWidth   = float(sys.argv[6])
+    worldHeight  = float(sys.argv[7])
+    maxVelocity  = float(sys.argv[8])
+    maxEpochs    = int(sys.argv[9])
+    k            = int(sys.argv[10])
+    fname        = str(sys.argv[11])
+    fname += '.csv'
 
-########### for testing
-'''
-numParticles = 20
-inertia      = 0.95
-cognition    = 2.0
-socialRate   = 2.0
-localRate    = 2.0
-worldWidth   = 100.0
-worldHeight  = 100.0
-maxVelocity  = 2.0
-k            = 2
-maxEpochs = 100000
-'''
+else:
+    ########### for testing
+    numParticles = 20
+    inertia      = 0.95
+    cognition    = 0.5
+    socialRate   = 0.5
+    localRate    = 0.5
+    worldWidth   = 100.0
+    worldHeight  = 100.0
+    maxVelocity  = 2.0
+    k            = 0
+    maxEpochs = 10000
 
 ########### data representation
 pList = []
@@ -148,7 +162,6 @@ def updateVelocity():
 
     for p in pList:
         #velocity update with neighbors
-        #formula to use neighbors is wrong, not sure what "c_3" is...
         if k > 0:
             v_x = inertia * p.velocity_x + cognition * rand1 * (p.pBest[1] - p.x) + socialRate * rand2 * (Particle.gBest[1] - p.x) + localRate * rand3 * (p.lBest[1] - p.x)
             v_y = inertia * p.velocity_y + cognition * rand1 * (p.pBest[2] - p.y) + socialRate * rand2 * (Particle.gBest[2] - p.y) + localRate * rand3 * (p.lBest[2] - p.y)
@@ -294,7 +307,8 @@ def plotToCSV():
 ########### main
 
 createParticles()
-paramsToCSV()
+if not thisIsATest:
+    paramsToCSV()
 
 epochs = 0
 #######
@@ -311,8 +325,10 @@ while True:
         updatelBest()
     ###
     error = calcError()
-    errorToCSV(error)
-    #print error
+    if not thisIsATest:
+        errorToCSV(error)
+    if verbose:
+        print error
     ###
     if error[0] < 0.01 and error[1] < 0.01:
         break
@@ -326,5 +342,6 @@ updategBest()
 if k > 0:
     updatelBest()
 printParticles()    
-plotToCSV()
+if not thisIsATest:
+    plotToCSV()
 print 'epochs: ', epochs
