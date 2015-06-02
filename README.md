@@ -57,3 +57,21 @@ worldWidth worldHeight maxVelocity maxEpochs k fname
     * Max Epochs          = 10,000
 * no CSV file will be generated, which is normally specified by fname
 Note: do not include an extension for fname, .csv is appended automatically
+
+#### Additional Info
+The problems solved in this particular program are as show:
+![Problems](http://i.imgur.com/G6yKPUZ.png)
+These are hard coded in, and only Problem 1 remains uncommented, however
+anyone could write their own problem and make it into a Q function.
+
+To give a better idea of what these particles are doing, here are two gifs
+of the particles coverging at the global max (20, 7) and the local max
+(-20, -7) over time, respectively.
+![Global Max](http://i.imgur.com/C6EIyyZ.gif) ![Local Max](http://i.imgur.com/hVmY8DB.gif)
+
+Further, here is a line plot of the average error of the particles over time.
+This run was using the test parameters for problem 1:
+
+![error over time](http://i.imgur.com/qgeQQ4k.jpg)
+
+
