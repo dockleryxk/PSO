@@ -43,7 +43,7 @@ swarm.py [-v] [test] numParticles inertia cognition socialRate localRate
 worldWidth worldHeight maxVelocity maxEpochs k fname
 
 * -v invokes the verbose option, which will print the error as the algorithm
-  runs in the format [error_x, error_y]
+runs in the format [error_x, error_y]
 * using the test argument will automatically provide the below parameters, -v works
     * Number of Particles = 20
     * Inertia             = 0.95
@@ -67,6 +67,7 @@ anyone could write their own problem and make it into a Q function.
 To give a better idea of what these particles are doing, here are two gifs
 of the particles coverging at the global max (20, 7) and the local max
 (-20, -7) over time, respectively.
+
 ![Global Max](http://i.imgur.com/C6EIyyZ.gif) ![Local Max](http://i.imgur.com/hVmY8DB.gif)
 
 Further, here is a line plot of the average error of the particles over time.
@@ -74,4 +75,5 @@ This run was using the test parameters for problem 1:
 
 ![error over time](http://i.imgur.com/qgeQQ4k.jpg)
 
-
+It is observed that the particles quickly near the solution, but "bounce around"
+until they have achieved an error of less that 0.01 each. Riveting.
