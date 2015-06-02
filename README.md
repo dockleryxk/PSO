@@ -44,6 +44,17 @@ worldWidth worldHeight maxVelocity maxEpochs k fname
 
 * -v invokes the verbose option, which will print the error as the algorithm
 runs in the format [error_x, error_y]
+* whether or not the verbose option is used, information about each particle
+state at the final epoch is printed. The data printed first is the globally
+most fit particle in the format [Q value, x position, y position]. Immediately
+below is the index of that particle in the array. Next, info about each 
+particle is printed in blocks as follows:
+    * i:   index in particle array
+    * x:   x position
+    * y:   y position
+    * v_x: x velocity
+    * v_y: y velocity
+    * b:   personal best Q value
 * using the test argument will automatically provide the below parameters, -v works
     * Number of Particles = 20
     * Inertia             = 0.95
