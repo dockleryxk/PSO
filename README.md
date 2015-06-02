@@ -1,5 +1,5 @@
 # PSO
-## Overview
+#### Overview
 From [Wikipedia](http://en.wikipedia.org/wiki/Particle_swarm_optimization):
 ```
 In computer science, particle swarm optimization (PSO) is a computational method 
@@ -12,30 +12,48 @@ by its local best known position but, is also guided toward the best known
 positions in the search-space, which are updated as better positions are found 
 by other particles. This is expected to move the swarm toward the best solutions.
 ```
-## Parameters
+#### Parameters
 The following is some guidance for the ranges of the parameters. 
 
-## Number of Particles
+#### Number of Particles
 A typical range is 20-40. For many problems, as few as 10 particles may be 
 enough. For larger or more difficult problems, 100, 200, or more particles 
 might be more appropriate. 
 
-## Inertia
+#### Inertia
 Generally the range is 0-1, typically very close to 1. 
 
-##Cognition, Social, and Local parameters
+#### Cognition, Social, and Local parameters
 Usually they are nearly equal and typically around 2, but they can range 
 from 0-4. If the local parameter is set to 0, then the neighbors take no 
 part in the optimization.
 
-## World Width and World Height
+#### World Width and World Height
 The range in the x and y directions, respectively. A good range is 
 -50 to 50 in both directions. In that case, both the world width and height 
 would be 100. 
 
-## Maximum Velocity
+#### Maximum Velocity
 Limits how much a particle can move for a given iteration. Typical values 
 to try are 1, 2, and 10. Some implementations define maximum velocity as the 
 world width or height. 
 
+#### Usage
+swarm.py [-v] [test] numParticles inertia cognition socialRate localRate 
+worldWidth worldHeight maxVelocity maxEpochs k fname
 
+* -v invokes the verbose option, which will print the error as the algorithm
+  runs in the format [error_x, error_y]
+* using the test argument will automatically provide the below parameters, -v works
+    * Number of Particles = 20
+    * Inertia             = 0.95
+    * Cognition           = 2
+    * Social Rate         = 2
+    * Local Rate          = 2
+    * World Width         = 100
+    * World Height        = 100
+    * Max Velocity        = 2
+    * k                   = 0 (no neighbors taken into account)
+    * Max Epochs          = 10,000
+* no CSV file will be generated, which is normally specified by fname
+Note: do not include an extension for fname, .csv is appended automatically
