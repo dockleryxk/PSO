@@ -40,9 +40,9 @@ else:
     ########### for testing
     numParticles = 20
     inertia      = 0.95
-    cognition    = 0.5
-    socialRate   = 0.5
-    localRate    = 0.5
+    cognition    = 2.0
+    socialRate   = 2.0
+    localRate    = 2.0
     worldWidth   = 100.0
     worldHeight  = 100.0
     maxVelocity  = 2.0
@@ -122,14 +122,14 @@ def ndist(p_x,p_y):
     return float(math.sqrt(((p_x+20.0)**2.0) + ((p_y+7.0)**2.0)))
 
 ########### Problem 1
-'''
 def Q(p_x,p_y):
     return float(100.0 * (1.0 - (pdist(p_x,p_y)/mdist())))
-'''
 
 ########### Problem 2
+'''
 def Q(p_x,p_y):
     return float((9.0 * max(0.0, 10.0 - (pdist(p_x,p_y)**2))) + (10.0 * (1.0 - (pdist(p_x,p_y)/mdist()))) + (70.0 * (1.0 - (ndist(p_x,p_y)/mdist()))))
+'''
 
 ###########
 
