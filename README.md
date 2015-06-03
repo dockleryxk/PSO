@@ -66,7 +66,8 @@ particle is printed in blocks as follows:
     * Max Velocity        = 2
     * k                   = 0 (no neighbors taken into account)
     * Max Epochs          = 10,000
-* no CSV file will be generated, which is normally specified by fname
+    * no CSV file will be generated, which is normally specified by fname
+
 Note: do not include an extension for fname, .csv is appended automatically
 
 #### Additional Info
