@@ -93,6 +93,6 @@ It is observed that the particles quickly near the solution, but "bounce around"
 until they have achieved an error of less that 0.01 each. Riveting.
 
 #### Contact
-[Richard Jeffords](richardjeffords.com)
+[Richard Jeffords](http://richardjeffords.com)
 
 rajeffords@gmail.com
