@@ -34,6 +34,7 @@ else:
     thisIsATest = False
 
 if(not thisIsATest):
+    """assign arguments based on command line arguments"""
     ########### command line args
     NP        = int(sys.argv[1])
     I         = float(sys.argv[2])
@@ -49,6 +50,7 @@ if(not thisIsATest):
     FN        += '.csv'
 
 else:
+    """use sample arguments to test the script"""
     ########### for testing
     NP        = 20
     I         = 0.95
@@ -65,8 +67,12 @@ else:
 ########### data representation
 
 class ParticleList:
+    """ParticleList encapsulates the list of particles and functions used to 
+    manipulate their attributes
+    """
 
     def __init__(self, NP, I, C, SR, LR, WW, WH, MV, K, FN):
+        """create an array, assign values, and initialize each particle"""
         self.pList        = []
         self.numParticles = NP
         self.inertia      = I
@@ -81,7 +87,7 @@ class ParticleList:
         self.createParticles()
 
     def createParticles(self):
-        #create particle list
+        """create a list of particles and then create neighborhoods if it's called for (k > 0)"""
         for i in range(0,self.numParticles):
             self.pList.append(self.Particle(i, self.worldWidth, self.worldHeight, self.k))
 
@@ -105,7 +111,8 @@ class ParticleList:
     ###########
 
     class Particle:
-        #value, x_pos, y_pos
+        """this class is used for each particle in the list and all of their attributes"""
+        #[Q value, x_pos, y_pos]
         gBest     = [0.0, 0, 0]
         bestIndex = 0
 
@@ -144,6 +151,7 @@ class ParticleList:
     ###########
 
     def printParticles(self):
+        """prints out useful info about each particle in the list"""
         print '\ngBest: ', self.Particle.gBest
         print 'index: ', self.Particle.bestIndex, '\n'
         for p in self.pList:
@@ -152,6 +160,10 @@ class ParticleList:
     ###########
 
     def updateVelocity(self):
+        """at each timestep or epoch, the velocity of each particle is updated
+        based on the inertia, current velocity, cognition, social rate, 
+        and optionally local rate. Of course, there's some choas too.
+        """
         rand1 = random.uniform(0.0,1.0)
         rand2 = random.uniform(0.0,1.0)
         rand3 = random.uniform(0.0,1.0)
@@ -199,6 +211,7 @@ class ParticleList:
     ###########
 
     def updatePosition(self):
+        """update particle postions based on velocity"""
         for p in self.pList:
             #position' = position + velocity' 
             p.x += p.velocity_x
@@ -207,6 +220,9 @@ class ParticleList:
     ###########
 
     def updatepBest(self):
+        """at each epoch, check to see if each particle's current position
+        is its best (or closest to the solution) yet
+        """
         for p in self.pList:
             #if(Q(position) > Q(personal_best_position)) 
             #personal_best_position = position 
@@ -216,6 +232,7 @@ class ParticleList:
     ###########
 
     def updategBest(self):
+        """find the best position of all the particles in the list"""
         tmp = self.Particle.gBest
         tmpIndex = self.Particle.bestIndex
         for p in self.pList:
@@ -230,6 +247,7 @@ class ParticleList:
     ###########
 
     def updatelBest(self):
+        """optionally find the best position out of a neighborhood"""
         tmp = [0.0, 0, 0]
         tmpIndex = 0
         for p in pList:
@@ -246,10 +264,11 @@ class ParticleList:
     ###########
 
     def calcError(self):
+        """calculate the error at each epoch"""
         error_x = 0.0
         error_y = 0.0
 
-        #for each particle k:
+        #for each particle p:
         #error_x += (position_x[k] - global_best_position_x)^2 
         #error_y += (position_y[k] - global_best_position_y)^2
         for p in self.pList:
@@ -267,6 +286,7 @@ class ParticleList:
     ###########
 
     def paramsToCSV(self):
+        """put the parameters at the top of the CSV file"""
         f = open(fname, 'a+')
         f.write('numParticles,inertia,cognition,socialRate,localRate,worldWidth,worldHeight,maxVelocity,maxEpochs,k\n'+str(self.numParticles)+','+str(self.inertia)+','+str(self.cognition)+','+str(self.socialRate)+','+str(self.localRate)+','+str(self.worldWidth)+','+str(self.worldHeight)+','+str(self.maxVelocity)+','+str(self.maxEpochs)+','+str(self.k)+'\nx error,y error\n')
         f.close()
@@ -274,6 +294,7 @@ class ParticleList:
     ###########
 
     def errorToCSV(self, e):
+        """print the error at each epoch to produce an error over time graph"""
         f = open(fname, 'a+')
         f.write(str(e[0])+','+str(e[1])+'\n')
         f.close()
@@ -281,6 +302,9 @@ class ParticleList:
     ###########
 
     def plotToCSV(self):
+        """print the points at the end to create a scatter plot, or at each epoch
+        to try for a gif animation
+        """
         f = open(fname,'a+')
         f.write('\n\n\nx values,y values')
         for p in self.pList:
@@ -312,7 +336,7 @@ def Q(p_x,p_y):
 
 
 ###########
-#create particle list
+#initialize particle list
 
 particles = ParticleList(NP, I, C, SR, LR, WW, WH, MV, K, FN)
 
@@ -324,6 +348,7 @@ if not thisIsATest:
 epochs = 0
 #######
 while True:
+    """each run through this loop represents and epoch"""
     ###
     particles.updateVelocity()
     ###
