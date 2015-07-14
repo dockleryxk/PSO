@@ -1,5 +1,7 @@
 #Particle Swarm Optimizatiion
 #Copyright Richard Jeffords 2015
+__author = "Richard Jeffords"
+__email  = "rajeffords@gmail.com"
 #GNU General Public License
 """
 This program is free software: you can redistribute it and/or modify
