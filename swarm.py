@@ -28,140 +28,144 @@ else:
     verbose = False
 
 if sys.argv[1] == 'test' or sys.argv[2] == 'test':
-    thisIsATest = True
+    a_test = True
 elif len(sys.argv) < 12:
-    sys.stderr.write('USAGE: [-v] swarm.py numParticles inertia cognition socialRate localRate worldWidth worldHeight maxVelocity maxEpochs k fname\n')
+    sys.stderr.write('USAGE: [-v] swarm.py num_particles inertia cognition social_rate local_rate world_width world_height max_velocity max_epochs num_neighbors fname\n')
     sys.exit(0)
 else:
-    thisIsATest = False
+    a_test = False
 
-if(not thisIsATest):
+if(not a_test):
     """assign arguments based on command line arguments"""
     ########### command line args
-    NP        = int(sys.argv[1])
-    I         = float(sys.argv[2])
-    C         = float(sys.argv[3])
-    SR        = float(sys.argv[4])
-    LR        = float(sys.argv[5])
-    WW        = float(sys.argv[6])
-    WH        = float(sys.argv[7])
-    MV        = float(sys.argv[8])
-    maxEpochs = int(sys.argv[9])
-    K         = int(sys.argv[10])
-    FN        = str(sys.argv[11])
-    FN        += '.csv'
+    params = ({'num_particles' : int(sys.argv[1]),
+               'inertia'       : float(sys.argv[2]),
+               'cognition'     : float(sys.argv[3]),
+               'social_rate'   : float(sys.argv[4]),
+               'local_rate'    : float(sys.argv[5]),
+               'world_width'   : float(sys.argv[6]),
+               'world_height'  : float(sys.argv[7]),
+               'max_velocity'  : float(sys.argv[8]),
+               'max_epochs'    : int(sys.argv[9]),
+               'num_neighbors' : int(sys.argv[10]),
+               'fname'         : (str(sys.argv[11]) + '.csv')})
 
 else:
     """use sample arguments to test the script"""
     ########### for testing
-    NP        = 20
-    I         = 0.95
-    C         = 2.0
-    SR        = 2.0
-    LR        = 2.0
-    WW        = 100.0
-    WH        = 100.0
-    MV        = 2.0
-    K         = 0
-    maxEpochs = 10000
-    FN        = ''
+    params = ({'num_particles' : 20,
+               'inertia'       : 0.95,
+               'cognition'     : 2.0,
+               'social_rate'   : 2.0,
+               'local_rate'    : 2.0,
+               'world_width'   : 100.0,
+               'world_height'  : 100.0,
+               'max_velocity'  : 2.0,
+               'max_epochs'    : 10000,
+               'num_neighbors' : 0,
+               'fname'         : ''})
 
 ########### data representation
 
-class ParticleList:
-    """ParticleList encapsulates the list of particles and functions used to 
+class Particle_List:
+    """Particle_List encapsulates the list of particles and functions used to 
     manipulate their attributes
     """
 
-    def __init__(self, NP, I, C, SR, LR, WW, WH, MV, K, FN):
+    def __init__(self, args):
         """create an array, assign values, and initialize each particle"""
-        self.pList        = []
-        self.numParticles = NP
-        self.inertia      = I
-        self.cognition    = C
-        self.socialRate   = SR
-        self.localRate    = LR
-        self.worldWidth   = WW
-        self.worldHeight  = WH
-        self.maxVelocity  = MV
-        self.k            = K
-        self.fname        = FN
-        self.createParticles()
+        self.p_list        = []
+        self.num_particles = args['num_particles']
+        self.inertia       = args['inertia']
+        self.cognition     = args['cognition']
+        self.social_rate   = args['social_rate']
+        self.local_rate    = args['local_rate']
+        self.world_width   = args['world_width']
+        self.world_height  = args['world_height']
+        self.max_velocity  = args['max_velocity']
+        self.num_neighbors = args['num_neighbors']
+        self.fname         = args['fname']
+        self._create_particles()
 
-    def createParticles(self):
+    def _create_particles(self):
         """create a list of particles and then create neighborhoods if it's called for (k > 0)"""
-        for i in range(0,self.numParticles):
-            self.pList.append(self.Particle(i, self.worldWidth, self.worldHeight, self.k))
+        for i in range(self.num_particles):
+            self.p_list.append(self.Particle(i, self.world_width, self.world_height, self.num_neighbors))
 
         #fill neighbor lists
-        if self.k > 0:
-            for p in self.pList:
-                for x in range(p.index-(self.k/2),p.index+(self.k/2)+1):
-                    if x > self.numParticles:
-                        p.neighbors.append(x%self.numParticles)
+        if self.num_neighbors > 0:
+            for p in self.p_list:
+                begin = p.index - (self.num_neighbors/2)
+                end   = p.index + (self.num_neighbors/2) + 1
+                if (begin == end):
+                    neighbors.append(0)
+
+                for x in range(begin,end):
+                    if x > self.num_particles:
+                        p.neighbors.append(x%self.num_particles)
                     elif x < 0:
-                        p.neighbors.append(self.numParticles+x)
-                    elif x == self.numParticles:
+                        p.neighbors.append(self.num_particles+x)
+                    elif x == self.num_particles:
                         p.neighbors.append(0)
                     else:
                         p.neighbors.append(x)
-            self.updatelBest()
+            self.update_local_best()
         
         #initialize global and local bests
-        self.updategBest()
+        self.update_global_best()
 
     ###########
 
     class Particle:
         """this class is used for each particle in the list and all of their attributes"""
         #[Q value, x_pos, y_pos]
-        gBest     = [0.0, 0, 0]
-        bestIndex = 0
+        global_best = [0.0, 0, 0]
+        best_index  = 0
 
-        #takes index in pList as constructor argument
-        def __init__(self, i, worldWidth, worldHeight, K):
+        #takes index in p_list as constructor argument
+        def __init__(self, i, world_width, world_height, num_neighbors):
             #x,y coords, randomly initialized
-            self.x          = randint(-worldWidth/2,worldWidth/2)
-            self.y          = randint(-worldHeight/2,worldHeight/2)
+            self.x                = randint(-world_width/2,world_width/2)
+            self.y                = randint(-world_height/2,world_height/2)
             #x,y velocity
-            self.velocity_x = 0.0
-            self.velocity_y = 0.0
+            self.velocity_x       = 0.0
+            self.velocity_y       = 0.0
             #personal best
             #[fitness value, x coord, y coord]
-            self.pBest      = [Q(self.x, self.y), self.x, self.y]
-            self.index      = i
+            self.personal_best    = [Q(self.x, self.y), self.x, self.y]
+            self.index            = i
             #local best
-            self.lBest      = []
-            self.lBestIndex = 0
+            self.local_best       = []
+            self.local_best_index = 0
             #array for neighbor indicies
-            self.neighbors  = []
-            self.k          = K
+            self.neighbors        = []
+            self.num_neighbors    = num_neighbors
         #for printing particle info
         def __str__(self):
             """Creates string representation of particle"""
-            ret = """  i: {self.index!s}
-            x: {self.x!s}
-            y: {self.y!s}
-            v_x: {self.velocity_x!s}
-            v_y: {self.velocity_y!s}
-            b: {self.pBest[0]!s}""".format(**locals())
-            if self.k > 0:
-                return ret+'  l: '+str(self.lBest)+'\n'
+            ret = """  index: {self.index!s}
+            x coordinate: {self.x!s}
+            y coordinate: {self.y!s}
+            x velocity: {self.velocity_x!s}
+            y velocity: {self.velocity_y!s}
+            personal best: {self.personal_best[0]!s}""".format(**locals())
+            if self.num_neighbors > 0:
+                return ret+'  local best: '+str(self.local_best)+'\n'
             else:
                 return ret+'\n'
 
     ###########
 
-    def printParticles(self):
+    def print_particles(self):
         """prints out useful info about each particle in the list"""
-        print '\ngBest: ', self.Particle.gBest
-        print 'index: ', self.Particle.bestIndex, '\n'
-        for p in self.pList:
+        print '\nglobal_best: ', self.Particle.global_best
+        print 'index: ', self.Particle.best_index, '\n'
+        for p in self.p_list:
             print p
 
     ###########
 
-    def updateVelocity(self):
+    def update_velocity(self):
         """at each timestep or epoch, the velocity of each particle is updated
         based on the inertia, current velocity, cognition, social rate, 
         and optionally local rate. Of course, there's some choas too.
@@ -176,26 +180,26 @@ class ParticleList:
         flag_x = False
         flag_y = False
 
-        for p in self.pList:
+        for p in self.p_list:
             #velocity update with neighbors
-            if self.k > 0:
-                v_x = inertia * p.velocity_x + cognition * rand1 * (p.pBest[1] - p.x) + socialRate * rand2 * (Particle.gBest[1] - p.x) + localRate * rand3 * (p.lBest[1] - p.x)
-                v_y = inertia * p.velocity_y + cognition * rand1 * (p.pBest[2] - p.y) + socialRate * rand2 * (Particle.gBest[2] - p.y) + localRate * rand3 * (p.lBest[2] - p.y)
+            if self.num_neighbors > 0:
+                v_x = inertia * p.velocity_x + cognition * rand1 * (p.personal_best[1] - p.x) + social_rate * rand2 * (Particle.global_best[1] - p.x) + local_rate * rand3 * (p.local_best[1] - p.x)
+                v_y = inertia * p.velocity_y + cognition * rand1 * (p.personal_best[2] - p.y) + social_rate * rand2 * (Particle.global_best[2] - p.y) + local_rate * rand3 * (p.local_best[2] - p.y)
 
             #velocity update without neighbors
             #velocity' = inertia * velocity + c_1 * r_1 * (personal_best_position - position) + c_2 * r_2 * (global_best_position - position) 
             else: 
-                v_x = self.inertia * p.velocity_x + self.cognition * rand1 * (p.pBest[1] - p.x) + self.socialRate * rand2 * (self.Particle.gBest[1] - p.x)
-                v_y = self.inertia * p.velocity_y + self.cognition * rand1 * (p.pBest[2] - p.y) + self.socialRate * rand2 * (self.Particle.gBest[2] - p.y)
+                v_x = self.inertia * p.velocity_x + self.cognition * rand1 * (p.personal_best[1] - p.x) + self.social_rate * rand2 * (self.Particle.global_best[1] - p.x)
+                v_y = self.inertia * p.velocity_y + self.cognition * rand1 * (p.personal_best[2] - p.y) + self.social_rate * rand2 * (self.Particle.global_best[2] - p.y)
 
             #scale velocity
             #if abs(velocity) > maximum_velocity^2 
             #velocity = (maximum_velocity/sqrt(velocity_x^2 + velocity_y^2)) * velocity 
-            if abs(v_x) > self.maxVelocity:
-                v_x2 = (self.maxVelocity/math.sqrt(v_x**2 + v_y**2)) * v_x
+            if abs(v_x) > self.max_velocity:
+                v_x2 = (self.max_velocity/math.sqrt(v_x**2 + v_y**2)) * v_x
                 flag_x = True
-            if abs(v_y) > self.maxVelocity:
-                v_y2 = (self.maxVelocity/math.sqrt(v_y**2 + v_y**2)) * v_y
+            if abs(v_y) > self.max_velocity:
+                v_y2 = (self.max_velocity/math.sqrt(v_y**2 + v_y**2)) * v_y
                 flag_y = True
 
             #use flag to determine which temp variable to use
@@ -212,60 +216,60 @@ class ParticleList:
 
     ###########
 
-    def updatePosition(self):
+    def update_position(self):
         """update particle postions based on velocity"""
-        for p in self.pList:
+        for p in self.p_list:
             #position' = position + velocity' 
             p.x += p.velocity_x
             p.y += p.velocity_y
 
     ###########
 
-    def updatepBest(self):
+    def update_personal_best(self):
         """at each epoch, check to see if each particle's current position
         is its best (or closest to the solution) yet
         """
-        for p in self.pList:
+        for p in self.p_list:
             #if(Q(position) > Q(personal_best_position)) 
             #personal_best_position = position 
-            if Q(p.x,p.y) > p.pBest[0]:
-                p.pBest = [Q(p.x,p.y), p.x, p.y]
+            if Q(p.x,p.y) > p.personal_best[0]:
+                p.personal_best = [Q(p.x,p.y), p.x, p.y]
 
     ###########
 
-    def updategBest(self):
+    def update_global_best(self):
         """find the best position of all the particles in the list"""
-        tmp = self.Particle.gBest
-        tmpIndex = self.Particle.bestIndex
-        for p in self.pList:
+        tmp       = self.Particle.global_best
+        tmp_index = self.Particle.best_index
+        for p in self.p_list:
             #if(Q(position) > Q(global_best_position)) 
             #global_best_position = position 
             if Q(p.x,p.y) > tmp[0]:
-                tmp      = [Q(p.x,p.y), p.x, p.y]
-                tmpIndex = p.index
-        self.Particle.gBest     = tmp
-        self.Particle.bestIndex = tmpIndex
+                tmp       = [Q(p.x,p.y), p.x, p.y]
+                tmp_index = p.index
+        self.Particle.global_best = tmp
+        self.Particle.best_index  = tmp_index
 
     ###########
 
-    def updatelBest(self):
+    def update_local_best(self):
         """optionally find the best position out of a neighborhood"""
         tmp = [0.0, 0, 0]
-        tmpIndex = 0
-        for p in pList:
+        tmp_index = 0
+        for p in self.p_list:
             for n in p.neighbors:
                 #find the local best Q value
-                if Q(pList[n].x,pList[n].y) > tmp[0]:
-                    tmp = [Q(pList[n].x, pList[n].y), pList[n].x, pList[n].y]
-                    tmpIndex = pList[n].index
-            p.lBest      = tmp
-            p.lBestIndex = tmpIndex
+                if Q(self.p_list[n].x, self.p_list[n].y) > tmp[0]:
+                    tmp = [Q(self.p_list[n].x, self.p_list[n].y), self.p_list[n].x, self.p_list[n].y]
+                    tmp_index = self.p_list[n].index
+            p.local_best       = tmp
+            p.local_best_index = tmp_index
             #reset tmp
             tmp = [0.0, 0, 0]
 
     ###########
 
-    def calcError(self):
+    def calc_error(self):
         """calculate the error at each epoch"""
         error_x = 0.0
         error_y = 0.0
@@ -273,29 +277,29 @@ class ParticleList:
         #for each particle p:
         #error_x += (position_x[k] - global_best_position_x)^2 
         #error_y += (position_y[k] - global_best_position_y)^2
-        for p in self.pList:
-            error_x += (p.x - self.Particle.gBest[1])**2
-            error_y += (p.y - self.Particle.gBest[2])**2
+        for p in self.p_list:
+            error_x += (p.x - self.Particle.global_best[1])**2
+            error_y += (p.y - self.Particle.global_best[2])**2
 
         #Then
         #error_x = sqrt((1/(2*num_particles))*error_x) 
         #error_y = sqrt((1/(2*num_particles))*error_y) 
-        error_x = math.sqrt((1.0/(2.0*self.numParticles))*error_x)
-        error_y = math.sqrt((1.0/(2.0*self.numParticles))*error_y)
+        error_x = math.sqrt((1.0/(2.0*self.num_particles))*error_x)
+        error_y = math.sqrt((1.0/(2.0*self.num_particles))*error_y)
 
         return [error_x, error_y]
 
     ###########
 
-    def paramsToCSV(self):
+    def params_to_CSV(self):
         """put the parameters at the top of the CSV file"""
         f = open(fname, 'a+')
-        f.write('numParticles,inertia,cognition,socialRate,localRate,worldWidth,worldHeight,maxVelocity,maxEpochs,k\n'+str(self.numParticles)+','+str(self.inertia)+','+str(self.cognition)+','+str(self.socialRate)+','+str(self.localRate)+','+str(self.worldWidth)+','+str(self.worldHeight)+','+str(self.maxVelocity)+','+str(self.maxEpochs)+','+str(self.k)+'\nx error,y error\n')
+        f.write('num_particles,inertia,cognition,social_rate,local_rate,world_width,world_height,max_velocity,max_epochs,k\n'+str(self.num_particles)+','+str(self.inertia)+','+str(self.cognition)+','+str(self.social_rate)+','+str(self.local_rate)+','+str(self.world_width)+','+str(self.world_height)+','+str(self.max_velocity)+','+str(self.max_epochs)+','+str(self.num_neighbors)+'\nx error,y error\n')
         f.close()
 
     ###########
 
-    def errorToCSV(self, e):
+    def error_to_CSV(self, e):
         """print the error at each epoch to produce an error over time graph"""
         f = open(fname, 'a+')
         f.write(str(e[0])+','+str(e[1])+'\n')
@@ -303,22 +307,21 @@ class ParticleList:
             
     ###########
 
-    def plotToCSV(self):
+    def plot_to_CSV(self):
         """print the points at the end to create a scatter plot, or at each epoch
         to try for a gif animation
         """
         f = open(fname,'a+')
         f.write('\n\n\nx values,y values')
-        for p in self.pList:
+        for p in self.p_list:
             f.write(str(p.x)+','+str(p.y)+'\n')
         f.close()
 
 ########### distance functions
 
 def mdist():
-    global WW
-    global WH
-    return float(math.sqrt((WW**2.0)+(WH**2.0))/2.0)
+    global params
+    return float(math.sqrt((params['world_width']**2.0)+(params['world_height']**2.0))/2.0)
 ########### 
 def pdist(p_x,p_y):
     return float(math.sqrt(((p_x-20.0)**2.0) + ((p_y-7.0)**2.0)))
@@ -340,48 +343,48 @@ def Q(p_x,p_y):
 ###########
 #initialize particle list
 
-particles = ParticleList(NP, I, C, SR, LR, WW, WH, MV, K, FN)
+particles = Particle_List(params)
 
 ########### main
 
-if not thisIsATest:
-    particles.paramsToCSV()
+if not a_test:
+    particles.params_to_CSV()
 
 epochs = 0
 #######
 while True:
     """each run through this loop represents and epoch"""
     ###
-    particles.updateVelocity()
+    particles.update_velocity()
     ###
-    particles.updatePosition()
+    particles.update_position()
     ###
-    particles.updatepBest()
+    particles.update_personal_best()
     ###
-    particles.updategBest()
-    if K > 0:
-        particles.updatelBest()
+    particles.update_global_best()
+    if params['num_neighbors'] > 0:
+        particles.update_local_best()
     ###
-    error = particles.calcError()
-    if not thisIsATest:
-        particles.errorToCSV(error)
+    error = particles.calc_error()
+    if not a_test:
+        particles.error_to_CSV(error)
     if verbose:
         print error
     ###
     if error[0] < 0.01 and error[1] < 0.01:
         break
-    elif epochs > maxEpochs:
+    elif epochs > params['max_epochs']:
         break
     ###
     epochs += 1
 #######
-particles.updatepBest()
-particles.updategBest()
-if K > 0:
-    particles.updatelBest()
-particles.printParticles()    
-if not thisIsATest:
-    particles.plotToCSV()
+particles.update_personal_best()
+particles.update_global_best()
+if params['num_neighbors'] > 0:
+    particles.update_local_best()
+particles.print_particles()    
+if not a_test:
+    particles.plot_to_CSV()
 print 'epochs: ', epochs
 
 
