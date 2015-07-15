@@ -97,8 +97,6 @@ class Particle_List:
             for p in self.p_list:
                 begin = p.index - (self.num_neighbors/2)
                 end   = p.index + (self.num_neighbors/2) + 1
-                if (begin == end):
-                    neighbors.append(0)
 
                 for x in range(begin,end):
                     if x > self.num_particles:
