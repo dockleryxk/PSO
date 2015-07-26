@@ -24,8 +24,10 @@ from random import randint
 
 if sys.argv[1] == '-v':
     verbose = True
+    offset  = 1
 else:
     verbose = False
+    offset  = 0
 
 if sys.argv[1] == 'test' or sys.argv[2] == 'test':
     a_test = True
@@ -38,17 +40,17 @@ else:
 if(not a_test):
     """assign arguments based on command line arguments"""
     ########### command line args
-    params = ({'num_particles' : int(sys.argv[1]),
-               'inertia'       : float(sys.argv[2]),
-               'cognition'     : float(sys.argv[3]),
-               'social_rate'   : float(sys.argv[4]),
-               'local_rate'    : float(sys.argv[5]),
-               'world_width'   : float(sys.argv[6]),
-               'world_height'  : float(sys.argv[7]),
-               'max_velocity'  : float(sys.argv[8]),
-               'max_epochs'    : int(sys.argv[9]),
-               'num_neighbors' : int(sys.argv[10]),
-               'fname'         : (str(sys.argv[11]) + '.csv')})
+    params = ({'num_particles' : int(sys.argv[1 + offset]),
+               'inertia'       : float(sys.argv[2 + offset]),
+               'cognition'     : float(sys.argv[3 + offset]),
+               'social_rate'   : float(sys.argv[4 + offset]),
+               'local_rate'    : float(sys.argv[5 + offset]),
+               'world_width'   : float(sys.argv[6 + offset]),
+               'world_height'  : float(sys.argv[7 + offset]),
+               'max_velocity'  : float(sys.argv[8 + offset]),
+               'max_epochs'    : int(sys.argv[9 + offset]),
+               'num_neighbors' : int(sys.argv[10 + offset]),
+               'fname'         : (str(sys.argv[11 + offset]) + '.csv')})
 
 else:
     """use sample arguments to test the script"""
@@ -83,6 +85,7 @@ class Particle_List:
         self.world_width   = args['world_width']
         self.world_height  = args['world_height']
         self.max_velocity  = args['max_velocity']
+        self.max_epochs    = args['max_epochs']
         self.num_neighbors = args['num_neighbors']
         self.fname         = args['fname']
         self._create_particles()
@@ -141,12 +144,14 @@ class Particle_List:
         #for printing particle info
         def __str__(self):
             """Creates string representation of particle"""
-            ret = """  index: {self.index!s}
+            ret = """
+            index: {self.index!s}
             x coordinate: {self.x!s}
             y coordinate: {self.y!s}
             x velocity: {self.velocity_x!s}
             y velocity: {self.velocity_y!s}
-            personal best: {self.personal_best[0]!s}""".format(**locals())
+            personal best: {self.personal_best[0]!s}
+            """.format(**locals())
             if self.num_neighbors > 0:
                 return ret+'  local best: '+str(self.local_best)+'\n'
             else:
@@ -291,15 +296,28 @@ class Particle_List:
 
     def params_to_CSV(self):
         """put the parameters at the top of the CSV file"""
-        f = open(fname, 'a+')
-        f.write('num_particles,inertia,cognition,social_rate,local_rate,world_width,world_height,max_velocity,max_epochs,k\n'+str(self.num_particles)+','+str(self.inertia)+','+str(self.cognition)+','+str(self.social_rate)+','+str(self.local_rate)+','+str(self.world_width)+','+str(self.world_height)+','+str(self.max_velocity)+','+str(self.max_epochs)+','+str(self.num_neighbors)+'\nx error,y error\n')
+        f = open(self.fname, 'a+')
+        f.write(('parameters\n'
+        +'num_particles,inertia,cognition,social_rate,local_rate,world_width,world_height,max_velocity,max_epochs,num_neighbors\n'
+        +str(self.num_particles)+','
+        +str(self.inertia)+','
+        +str(self.cognition)+','
+        +str(self.social_rate)+','
+        +str(self.local_rate)+','
+        +str(self.world_width)+','
+        +str(self.world_height)+','
+        +str(self.max_velocity)+','
+        +str(self.max_epochs)+','
+        +str(self.num_neighbors)+
+        '\n\n\nerror,over,time\n'+
+        'x error,y error\n'))
         f.close()
 
     ###########
 
     def error_to_CSV(self, e):
         """print the error at each epoch to produce an error over time graph"""
-        f = open(fname, 'a+')
+        f = open(self.fname, 'a+')
         f.write(str(e[0])+','+str(e[1])+'\n')
         f.close()
             
@@ -309,8 +327,8 @@ class Particle_List:
         """print the points at the end to create a scatter plot, or at each epoch
         to try for a gif animation
         """
-        f = open(fname,'a+')
-        f.write('\n\n\nx values,y values')
+        f = open(self.fname,'a+')
+        f.write('\n\n\nfinal,coordinates\nx values,y values\n')
         for p in self.p_list:
             f.write(str(p.x)+','+str(p.y)+'\n')
         f.close()
