@@ -144,18 +144,20 @@ class Particle_List:
         #for printing particle info
         def __str__(self):
             """Creates string representation of particle"""
-            ret = """
+            if self.num_neighbors > 0:
+                tmp = 'local best: '+str(self.local_best)+'\n'
+            else:
+                tmp = '\n'
+            rtn = """
             index: {self.index!s}
             x coordinate: {self.x!s}
             y coordinate: {self.y!s}
             x velocity: {self.velocity_x!s}
             y velocity: {self.velocity_y!s}
             personal best: {self.personal_best[0]!s}
+            {tmp}
             """.format(**locals())
-            if self.num_neighbors > 0:
-                return ret+'  local best: '+str(self.local_best)+'\n'
-            else:
-                return ret+'\n'
+            return rtn
 
     ###########
 
@@ -186,8 +188,8 @@ class Particle_List:
         for p in self.p_list:
             #velocity update with neighbors
             if self.num_neighbors > 0:
-                v_x = inertia * p.velocity_x + cognition * rand1 * (p.personal_best[1] - p.x) + social_rate * rand2 * (Particle.global_best[1] - p.x) + local_rate * rand3 * (p.local_best[1] - p.x)
-                v_y = inertia * p.velocity_y + cognition * rand1 * (p.personal_best[2] - p.y) + social_rate * rand2 * (Particle.global_best[2] - p.y) + local_rate * rand3 * (p.local_best[2] - p.y)
+                v_x = self.inertia * p.velocity_x + self.cognition * rand1 * (p.personal_best[1] - p.x) + self.social_rate * rand2 * (self.Particle.global_best[1] - p.x) + self.local_rate * rand3 * (p.local_best[1] - p.x)
+                v_y = self.inertia * p.velocity_y + self.cognition * rand1 * (p.personal_best[2] - p.y) + self.social_rate * rand2 * (self.Particle.global_best[2] - p.y) + self.local_rate * rand3 * (p.local_best[2] - p.y)
 
             #velocity update without neighbors
             #velocity' = inertia * velocity + c_1 * r_1 * (personal_best_position - position) + c_2 * r_2 * (global_best_position - position) 
@@ -297,18 +299,18 @@ class Particle_List:
     def params_to_CSV(self):
         """put the parameters at the top of the CSV file"""
         f = open(self.fname, 'a+')
-        f.write(('parameters\n'
-        +'num_particles,inertia,cognition,social_rate,local_rate,world_width,world_height,max_velocity,max_epochs,num_neighbors\n'
-        +str(self.num_particles)+','
-        +str(self.inertia)+','
-        +str(self.cognition)+','
-        +str(self.social_rate)+','
-        +str(self.local_rate)+','
-        +str(self.world_width)+','
-        +str(self.world_height)+','
-        +str(self.max_velocity)+','
-        +str(self.max_epochs)+','
-        +str(self.num_neighbors)+
+        f.write(('parameters\n'+
+        'num_particles,inertia,cognition,social_rate,local_rate,world_width,world_height,max_velocity,max_epochs,num_neighbors\n'+
+        str(self.num_particles)+','+
+        str(self.inertia)+','+
+        str(self.cognition)+','+
+        str(self.social_rate)+','+
+        str(self.local_rate)+','+
+        str(self.world_width)+','+
+        str(self.world_height)+','+
+        str(self.max_velocity)+','+
+        str(self.max_epochs)+','+
+        str(self.num_neighbors)+
         '\n\n\nerror,over,time\n'+
         'x error,y error\n'))
         f.close()
